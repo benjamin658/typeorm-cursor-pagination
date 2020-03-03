@@ -4,7 +4,7 @@
   "description": "Cursor-based pagination works with TypeORM.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/*.ts",
+    "test": "nyc mocha --require ts-node/register test/*.ts",
     "test:docker": "docker-compose up -d && npm run test && docker-compose down",
     "build": "rimraf lib && tsc",
     "prepublish": "npm run build"
@@ -25,14 +25,15 @@
   "devDependencies": {
     "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
+    "@types/node": "^13.7.7",
     "@typescript-eslint/eslint-plugin": "^2.21.0",
     "@typescript-eslint/parser": "^2.21.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-import-resolver-typescript": "^2.0.0",
     "eslint-plugin-import": "^2.20.1",
     "mocha": "^7.1.0",
+    "nyc": "^15.0.0",
     "pg": "^7.18.2",
     "rimraf": "^3.0.2",
     "ts-node": "^8.6.2",
