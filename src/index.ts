@@ -10,16 +10,16 @@ export interface PagingQuery {
 }
 
 export interface PagniationOtions<Entity> {
-  query: PagingQuery;
   entity: ObjectType<Entity>;
   alias?: string;
+  query?: PagingQuery;
   paginationKeys?: Extract<keyof Entity, string>[];
 }
 
 export function buildPaginator<Entity>(options: PagniationOtions<Entity>): Paginator<Entity> {
   const {
-    query,
     entity,
+    query = {},
     alias = entity.name.toLowerCase(),
     paginationKeys = ['id' as any],
   } = options;
