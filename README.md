@@ -27,6 +27,8 @@ const paginator = buildPaginator({
 
 // Pass queryBuilder as parameter to get paginate result.
 const result: User[] = await paginator.paginate(queryBuilder);
+
+// Get cursor for next iteration
 const cursor = paginator.getCursor();
 ```
 
@@ -34,10 +36,10 @@ The `buildPaginator` function has the following options:
 
 * `entity` [required]: TypeORM entity.
 * `alias` [optional]: alias of the query builder.
-* `paginationKeys` [optional]: array of the fields to be used for the pagination, default is `id`.
+* `paginationKeys` [optional]: array of the fields to be used for the pagination, **default is `id`**.
 * `query` [optional]:
-  * `limit`: limit the number of records returned, default is 100.
-  * `order`: `ASC` or `DESC`, default is `DESC`.
+  * `limit`: limit the number of records returned, **default is 100**.
+  * `order`: **ASC** or **DESC**, default is **DESC**.
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
 
