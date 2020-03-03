@@ -1,6 +1,7 @@
 # TypeORM Cursor Pagniation
 
 [![Build Status](https://travis-ci.com/benjamin658/typeorm-cursor-pagination.svg?branch=master)](https://travis-ci.com/benjamin658/typeorm-cursor-pagination)
+[![Coverage Status](https://coveralls.io/repos/github/benjamin658/typeorm-cursor-pagination/badge.svg?branch=master)](https://coveralls.io/github/benjamin658/typeorm-cursor-pagination?branch=master)
 [![license](https://img.shields.io/github/license/benjamin658/typeorm-cursor-pagination)](https://github.com/benjamin658/typeorm-cursor-pagination/blob/master/License)
 
 Cursor-based pagination works with [TypeORM Query Builder](https://typeorm.io/#/select-query-builder).
