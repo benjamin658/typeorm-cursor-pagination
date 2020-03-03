@@ -13,3 +13,5 @@ script:
 
 after_script:
   - docker-compose down -v
+
+after_success: npm run coverage
