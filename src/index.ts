@@ -1,8 +1,8 @@
 import { ObjectType } from 'typeorm';
 
-import Paginator, { Order, Cursor } from './Paginator';
+import Paginator, { Order, Cursor, PagingResult } from './Paginator';
 
-export { Order, Cursor };
+export { Order, Cursor, PagingResult };
 
 export interface PagingQuery {
   afterCursor?: string;

@@ -33,10 +33,7 @@ const paginator = buildPaginator({
 });
 
 // Pass queryBuilder as parameter to get paginate result.
-const result: User[] = await paginator.paginate(queryBuilder);
-
-// Get cursor for next iteration
-const cursor = paginator.getCursor();
+const { data, cursor } = await paginator.paginate(queryBuilder);
 ```
 
 The `buildPaginator` function has the following options:
@@ -50,9 +47,14 @@ The `buildPaginator` function has the following options:
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
 
-Cursor returns by `paginator.getCursor()` for next iteration
+`paginator.paginate(queryBuilder)` returns the entities and cursor for next iteration
 
 ```typescript
+interface PagingResult<Entity> {
+  data: Entity[];
+  cursor: Cursor;
+}
+
 interface Cursor {
   beforeCursor: string | null;
   afterCursor: string | null;
