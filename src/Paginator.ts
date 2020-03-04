@@ -36,7 +36,7 @@ export default class Paginator<Entity> {
 
   private alias: string = pascalToUnderscore(this.entity.name);
 
-  private limit = 10;
+  private limit = 100;
 
   private order: Order = 'DESC';
 
