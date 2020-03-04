@@ -7,13 +7,17 @@
 
 Cursor-based pagination works with [TypeORM Query Builder](https://typeorm.io/#/select-query-builder).
 
+[Why or What is Cursor-Based Pagination](https://jsonapi.org/profiles/ethanresnick/cursor-pagination/)
+
+> If this project is helpful for you to save your time reinventing the wheel, I truly appreciate you all for your stars ⭐⭐⭐ and contributions 💪💪💪.
+
 ## Installation
 
 `npm install typeorm-cursor-pagination --save`
 
 ## Usage
 
-Query first page without any cursor
+### Query first page without any cursor
 
 ```typescript
 import { getConnection } from "typeorm";
@@ -36,7 +40,7 @@ const paginator = buildPaginator({
 const { data, cursor } = await paginator.paginate(queryBuilder);
 ```
 
-The `buildPaginator` function has the following options:
+**The `buildPaginator` function has the following options**
 
 * `entity` [required]: TypeORM entity.
 * `alias` [optional]: alias of the query builder.
@@ -47,7 +51,7 @@ The `buildPaginator` function has the following options:
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
 
-`paginator.paginate(queryBuilder)` returns the entities and cursor for next iteration
+**`paginator.paginate(queryBuilder)` returns the entities and cursor for the next iteration**
 
 ```typescript
 interface PagingResult<Entity> {
@@ -61,7 +65,7 @@ interface Cursor {
 }
 ```
 
-Query next page by `afterCursor`
+### Query next page by `afterCursor`
 
 ```typescript
 const nextPaginator = buildPaginator({
@@ -72,9 +76,11 @@ const nextPaginator = buildPaginator({
     afterCursor: cursor.afterCursor,
   },
 });
+
+const { data, cursor } = await nextPaginator.paginate(queryBuilder);
 ```
 
-Query prev page by `beforeCursor`
+### Query prev page by `beforeCursor`
 
 ```typescript
 const prevPaginator = buildPaginator({
@@ -85,6 +91,8 @@ const prevPaginator = buildPaginator({
     beforeCursor: cursor.beforeCursor,
   },
 });
+
+const { data, cursor } = await prevPaginator.paginate(queryBuilder);
 ```
 
 ## Integration Test with Docker
