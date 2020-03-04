@@ -10,7 +10,7 @@ describe('TypeORM cursor-based pagination test', () => {
     await createConnection({
       type: 'postgres',
       host: 'localhost',
-      port: 5433,
+      port: 5432,
       username: 'test',
       password: 'test',
       database: 'test',
