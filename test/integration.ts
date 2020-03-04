@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { createConnection, getConnection } from 'typeorm';
 
 import { createQueryBuilder } from './utils/createQueryBuilder';
-import { buildPaginator, PagingResult } from '../src/index';
+import { buildPaginator } from '../src/index';
 import { Example } from './entities/Example';
 
 describe('TypeORM cursor-based pagination test', () => {
@@ -21,55 +21,46 @@ describe('TypeORM cursor-based pagination test', () => {
     await getConnection().query('CREATE TABLE example as SELECT generate_series(1, 10) AS id;');
   });
 
-  let firstPageResult: PagingResult<Example>;
-  let nextPageResult: PagingResult<Example>;
-
-  it('should have afterCursor if the result set has next page', async () => {
+  it('should paginate correctly with before and after cursor', async () => {
     const queryBuilder = createQueryBuilder();
-    const paginator = buildPaginator({
+
+    const firstPagePaginator = buildPaginator({
       entity: Example,
       query: {
         limit: 1,
       },
     });
+    const firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
 
-    firstPageResult = await paginator.paginate(queryBuilder);
-
-    expect(firstPageResult.cursor.afterCursor).to.not.eq(null);
-    expect(firstPageResult.cursor.beforeCursor).to.eq(null);
-    expect(firstPageResult.data[0].id).to.eq(10);
-  });
-
-  it('should have beforeCursor if the result set has prev page', async () => {
-    const queryBuilder = createQueryBuilder();
-    const paginator = buildPaginator({
+    const nextPagePaginator = buildPaginator({
       entity: Example,
       query: {
         limit: 1,
         afterCursor: firstPageResult.cursor.afterCursor as string,
       },
     });
+    const nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
 
-    nextPageResult = await paginator.paginate(queryBuilder);
-
-    expect(nextPageResult.cursor.afterCursor).to.not.eq(null);
-    expect(nextPageResult.cursor.beforeCursor).to.not.eq(null);
-    expect(nextPageResult.data[0].id).to.eq(9);
-  });
-
-  it('should return prev page result set if beforeCursor is set', async () => {
-    const queryBuilder = createQueryBuilder();
-    const paginator = buildPaginator({
+    const prevPagePaginator = buildPaginator({
       entity: Example,
       query: {
         limit: 1,
         beforeCursor: nextPageResult.cursor.beforeCursor as string,
       },
     });
+    const prevPageResult = await prevPagePaginator.paginate(queryBuilder.clone());
 
-    const result = await paginator.paginate(queryBuilder);
+    expect(firstPageResult.cursor.beforeCursor).to.eq(null);
+    expect(firstPageResult.cursor.afterCursor).to.not.eq(null);
+    expect(firstPageResult.data[0].id).to.eq(10);
 
-    expect(result.data[0].id).to.eq(10);
+    expect(nextPageResult.cursor.beforeCursor).to.not.eq(null);
+    expect(nextPageResult.cursor.afterCursor).to.not.eq(null);
+    expect(nextPageResult.data[0].id).to.eq(9);
+
+    expect(prevPageResult.cursor.beforeCursor).to.eq(null);
+    expect(prevPageResult.cursor.afterCursor).to.not.eq(null);
+    expect(prevPageResult.data[0].id).to.eq(10);
   });
 
   it('should return entities with given order', async () => {

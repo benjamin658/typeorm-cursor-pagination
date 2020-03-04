@@ -7,7 +7,7 @@
     "test": "nyc mocha --require ts-node/register test/*.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "test:docker": "docker-compose up -d && npm run test && docker-compose down",
-    "build": "rimraf lib && tsc",
+    "build": "rimraf lib && tsc -p tsconfig.build.json",
     "prepublish": "npm run build"
   },
   "author": "Ben Hu <benjamin658gae@gmail.com>",
