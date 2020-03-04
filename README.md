@@ -45,7 +45,7 @@ The `buildPaginator` function has the following options:
 * `paginationKeys` [optional]: array of the fields to be used for the pagination, **default is `id`**.
 * `query` [optional]:
   * `limit`: limit the number of records returned, **default is 100**.
-  * `order`: **ASC** or **DESC**, default is **DESC**.
+  * `order`: **ASC** or **DESC**, **default is DESC**.
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
 
