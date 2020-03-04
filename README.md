@@ -97,4 +97,4 @@ To start a integration test, run the following command:
 
 © Ben Hu (benjamin658), 2020-NOW
 
-Released under the [MIT License](https://github.com/benjamin658/typeorm-cursor-pagination/blob/master/LICENSE)
+Released under the [MIT License](https://github.com/benjamin658/typeorm-cursor-pagination/blob/master/License)
