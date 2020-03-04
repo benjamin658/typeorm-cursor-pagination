@@ -2,8 +2,7 @@ import { expect } from 'chai';
 import { createConnection, getConnection } from 'typeorm';
 
 import { createQueryBuilder } from './utils/createQueryBuilder';
-import { buildPaginator } from '../src/index';
-import { Cursor } from '../src/Paginator';
+import { buildPaginator, Cursor } from '../src/index';
 import { Example } from './entities/Example';
 
 describe('TypeORM cursor-based pagination test', () => {
