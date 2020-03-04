@@ -23,7 +23,6 @@ describe('TypeORM cursor-based pagination test', () => {
 
   it('should paginate correctly with before and after cursor', async () => {
     const queryBuilder = createQueryBuilder();
-
     const firstPagePaginator = buildPaginator({
       entity: Example,
       query: {
@@ -64,7 +63,7 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   it('should return entities with given order', async () => {
-    const ascQueryBuilder = createQueryBuilder();
+    const queryBuilder = createQueryBuilder();
     const ascPaginator = buildPaginator({
       entity: Example,
       query: {
@@ -72,8 +71,6 @@ describe('TypeORM cursor-based pagination test', () => {
         order: 'ASC',
       },
     });
-
-    const descQueryBuilder = createQueryBuilder();
     const descPaginator = buildPaginator({
       entity: Example,
       query: {
@@ -82,8 +79,8 @@ describe('TypeORM cursor-based pagination test', () => {
       },
     });
 
-    const ascResult = await ascPaginator.paginate(ascQueryBuilder);
-    const descResult = await descPaginator.paginate(descQueryBuilder);
+    const ascResult = await ascPaginator.paginate(queryBuilder.clone());
+    const descResult = await descPaginator.paginate(queryBuilder.clone());
 
     expect(ascResult.data[0].id).to.eq(1);
     expect(descResult.data[0].id).to.eq(10);
