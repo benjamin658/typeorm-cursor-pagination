@@ -17,6 +17,7 @@ Query first page without any cursor
 
 ```typescript
 import { getConnection } from "typeorm";
+import { buildPaginator } from 'typeorm-cursor-pagination';
 
 const queryBuilder = getConnection()
   .getRepository(User)
