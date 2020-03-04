@@ -7,6 +7,10 @@
 
 Cursor-based pagination works with [TypeORM Query Builder](https://typeorm.io/#/select-query-builder).
 
+## Installation
+
+`npm install typeorm-cursor-pagination --save`
+
 ## Usage
 
 Query first page without any cursor
