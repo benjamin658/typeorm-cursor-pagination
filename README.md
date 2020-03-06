@@ -1,4 +1,4 @@
-# TypeORM Cursor Pagniation
+# TypeORM Cursor Pagination
 
 [![Build Status](https://travis-ci.com/benjamin658/typeorm-cursor-pagination.svg?branch=master)](https://travis-ci.com/benjamin658/typeorm-cursor-pagination)
 [![Coverage Status](https://coveralls.io/repos/github/benjamin658/typeorm-cursor-pagination/badge.svg?branch=master)](https://coveralls.io/github/benjamin658/typeorm-cursor-pagination?branch=master)
