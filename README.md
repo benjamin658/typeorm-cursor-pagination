@@ -101,6 +101,12 @@ To start a integration test, run the following command:
 
 `npm run test:docker`
 
+## Contributing
+
+All contributions are welcome, open a pull request or issue any time.
+
+***Commit your changes using a descriptive commit message that follows [commit message conventions](https://gist.github.com/stephenparish/9941e89d80e2bc58a153).***
+
 ## License
 
 © Ben Hu (benjamin658), 2020-NOW
