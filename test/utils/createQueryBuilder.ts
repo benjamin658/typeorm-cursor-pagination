@@ -1,8 +1,8 @@
 import { getConnection, SelectQueryBuilder } from 'typeorm';
-import { Example } from '../entities/Example';
+import { User } from '../entities/User';
 
-export function createQueryBuilder(): SelectQueryBuilder<Example> {
+export function createQueryBuilder(): SelectQueryBuilder<User> {
   return getConnection()
-    .getRepository(Example)
-    .createQueryBuilder('example');
+    .getRepository(User)
+    .createQueryBuilder('user');
 }

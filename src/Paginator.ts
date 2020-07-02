@@ -113,33 +113,48 @@ export default class Paginator<Entity> {
       Object.assign(cursors, this.decode(this.beforeCursor as string));
     }
 
-    if (Object.keys(cursors).length > 0) {
-      builder.addFrom((pagingQuery) => pagingQuery
+    builder.innerJoin((paging) => {
+      const pagingSubQuery = paging
+        .from(this.entity, 'paging')
         .select(this.paginationKeys)
-        .from(this.entity, this.alias)
-        .andWhere(new Brackets((where) => this.buildCursor(where, cursors))),
-      'paging');
+        .limit(this.limit + 1)
+        .orderBy(this.buildOrder('paging'));
 
-      this.paginationKeys.forEach((key) => {
-        builder.andWhere(`${this.alias}.${key} = paging.${key}`);
-      });
-    }
+      if (Object.keys(cursors).length > 0) {
+        pagingSubQuery
+          .andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
+      }
 
-    builder.take(this.limit + 1);
-    builder.orderBy(this.buildOrder());
+      return pagingSubQuery;
+    },
+    'paging',
+    this.buildPagingInnerJoinCondition());
+
+    builder.orderBy(this.buildOrder(this.alias));
 
     return builder;
   }
 
-  private buildCursor(where: WhereExpression, cursors: CursorParam): void {
+  private buildCursorQuery(where: WhereExpression, cursors: CursorParam): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
     let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}${this.alias}.${key} ${operator} :${key}`, params);
-      query = `${query}${this.alias}.${key} = :${key} AND `;
+      where.orWhere(`${query}paging.${key} ${operator} :${key}`, params);
+      query = `${query}paging.${key} = :${key} AND `;
     });
+  }
+
+  private buildPagingInnerJoinCondition(): string {
+    return this.paginationKeys.reduce((prev, next) => {
+      let query = `${this.alias}.${next} = paging.${next}`;
+      if (prev !== '') {
+        query = `AND ${query}`;
+      }
+
+      return `${prev} ${query}`;
+    }, '');
   }
 
   private getOperator(): string {
@@ -154,7 +169,7 @@ export default class Paginator<Entity> {
     return '=';
   }
 
-  private buildOrder(): OrderByCondition {
+  private buildOrder(alias: string): OrderByCondition {
     let { order } = this;
 
     if (!this.hasAfterCursor() && this.hasBeforeCursor()) {
@@ -163,7 +178,7 @@ export default class Paginator<Entity> {
 
     const orderByCondition: OrderByCondition = {};
     this.paginationKeys.forEach((key) => {
-      orderByCondition[`${this.alias}.${key}`] = order;
+      orderByCondition[`${alias}.${key}`] = order;
     });
 
     return orderByCondition;

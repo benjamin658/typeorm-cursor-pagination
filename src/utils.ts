@@ -14,7 +14,7 @@ export function encodeByType(type: string, value: any): string | null {
       return (value as Date).getTime().toString();
     }
     case 'number': {
-      return (value as number).toString();
+      return `${value}`;
     }
     case 'string': {
       return encodeURIComponent(value);
@@ -73,10 +73,6 @@ export function stringToNumber(value: string): number {
 
 export function camelOrPascalToUnderscore(str: string): string {
   return str.split(/(?=[A-Z])/).join('_').toLowerCase();
-}
-
-export function camelToUnderscore(str: string): string {
-  return camelOrPascalToUnderscore(str);
 }
 
 export function pascalToUnderscore(str: string): string {

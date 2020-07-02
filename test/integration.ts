@@ -2,8 +2,10 @@ import { expect } from 'chai';
 import { createConnection, getConnection } from 'typeorm';
 
 import { createQueryBuilder } from './utils/createQueryBuilder';
+import { prepareData } from './utils/prepareData';
+import { User } from './entities/User';
+import { Photo } from './entities/Photo';
 import { buildPaginator } from '../src/index';
-import { Example } from './entities/Example';
 
 describe('TypeORM cursor-based pagination test', () => {
   before(async () => {
@@ -14,18 +16,19 @@ describe('TypeORM cursor-based pagination test', () => {
       username: 'test',
       password: 'test',
       database: 'test',
-      entities: [Example],
+      synchronize: true,
+      entities: [User, Photo],
       logging: true,
     });
 
-    await getConnection().query('DROP TABLE IF EXISTS example;');
-    await getConnection().query('CREATE TABLE example as SELECT generate_series(1, 10) AS id;');
+    await prepareData();
   });
 
   it('should paginate correctly with before and after cursor', async () => {
-    const queryBuilder = createQueryBuilder();
+    const queryBuilder = createQueryBuilder().leftJoinAndSelect('user.photos', 'photo');
     const firstPagePaginator = buildPaginator({
-      entity: Example,
+      entity: User,
+      paginationKeys: ['id', 'name', 'timestamp'],
       query: {
         limit: 1,
       },
@@ -33,7 +36,8 @@ describe('TypeORM cursor-based pagination test', () => {
     const firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
 
     const nextPagePaginator = buildPaginator({
-      entity: Example,
+      entity: User,
+      paginationKeys: ['id', 'name', 'timestamp'],
       query: {
         limit: 1,
         afterCursor: firstPageResult.cursor.afterCursor as string,
@@ -42,7 +46,8 @@ describe('TypeORM cursor-based pagination test', () => {
     const nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
 
     const prevPagePaginator = buildPaginator({
-      entity: Example,
+      entity: User,
+      paginationKeys: ['id', 'name', 'timestamp'],
       query: {
         limit: 1,
         beforeCursor: nextPageResult.cursor.beforeCursor as string,
@@ -66,14 +71,14 @@ describe('TypeORM cursor-based pagination test', () => {
   it('should return entities with given order', async () => {
     const queryBuilder = createQueryBuilder();
     const ascPaginator = buildPaginator({
-      entity: Example,
+      entity: User,
       query: {
         limit: 1,
         order: 'ASC',
       },
     });
     const descPaginator = buildPaginator({
-      entity: Example,
+      entity: User,
       query: {
         limit: 1,
         order: 'DESC',
@@ -90,7 +95,7 @@ describe('TypeORM cursor-based pagination test', () => {
   it('should return entities with given limit', async () => {
     const queryBuilder = createQueryBuilder();
     const paginator = buildPaginator({
-      entity: Example,
+      entity: User,
       query: {
         limit: 10,
       },
@@ -102,9 +107,9 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   it('should return empty array and null cursor if no data', async () => {
-    const queryBuilder = createQueryBuilder().where('example.id > :id', { id: 10 });
+    const queryBuilder = createQueryBuilder().where('user.id > :id', { id: 10 });
     const paginator = buildPaginator({
-      entity: Example,
+      entity: User,
     });
     const result = await paginator.paginate(queryBuilder);
 
@@ -114,7 +119,7 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   after(async () => {
-    await getConnection().query('TRUNCATE TABLE example;');
+    await getConnection().query('TRUNCATE TABLE users RESTART IDENTITY CASCADE;');
     await getConnection().close();
   });
 });
