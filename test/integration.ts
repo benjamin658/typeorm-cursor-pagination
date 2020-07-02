@@ -118,6 +118,17 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.cursor.afterCursor).to.eq(null);
   });
 
+  it('should correctly paginate entities with camel-cased pagination keys', async () => {
+    const queryBuilder = createQueryBuilder();
+    const paginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['createdAt', 'id'],
+    });
+    const result = await paginator.paginate(queryBuilder);
+
+    expect(result.data).length(10);
+  });
+
   after(async () => {
     await getConnection().query('TRUNCATE TABLE users RESTART IDENTITY CASCADE;');
     await getConnection().close();

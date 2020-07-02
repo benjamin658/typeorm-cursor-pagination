@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
 
 import { Photo } from './Photo';
@@ -33,4 +34,7 @@ export class User {
     },
   )
   public photos!: Photo[]
+
+  @CreateDateColumn()
+  createdAt!: Date;
 }
