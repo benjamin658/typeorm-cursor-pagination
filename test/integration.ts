@@ -15,6 +15,7 @@ describe('TypeORM cursor-based pagination test', () => {
       password: 'test',
       database: 'test',
       entities: [Example],
+      logging: true,
     });
 
     await getConnection().query('DROP TABLE IF EXISTS example;');

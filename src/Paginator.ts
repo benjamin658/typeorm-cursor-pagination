@@ -114,7 +114,15 @@ export default class Paginator<Entity> {
     }
 
     if (Object.keys(cursors).length > 0) {
-      builder.andWhere(new Brackets((where) => this.buildCursor(where, cursors)));
+      builder.addFrom((pagingQuery) => pagingQuery
+        .select(this.paginationKeys)
+        .from(this.entity, this.alias)
+        .andWhere(new Brackets((where) => this.buildCursor(where, cursors))),
+      'paging');
+
+      this.paginationKeys.forEach((key) => {
+        builder.andWhere(`${this.alias}.${key} = paging.${key}`);
+      });
     }
 
     builder.take(this.limit + 1);
