@@ -1,6 +1,6 @@
 {
   "name": "typeorm-cursor-pagination",
-  "version": "0.2.2",
+  "version": "0.3.0-beta.0",
   "description": "Cursor-based pagination works with TypeORM.",
   "main": "lib/index.js",
   "scripts": {
