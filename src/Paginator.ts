@@ -16,6 +16,8 @@ import {
 
 export type Order = 'ASC' | 'DESC';
 
+export type EscapeFn = (name: string) => string;
+
 interface CursorParam {
   [key: string]: any;
 }
@@ -40,6 +42,8 @@ export default class Paginator<Entity> {
   private nextBeforeCursor: string | null = null;
 
   private alias: string = pascalToUnderscore(this.entity.name);
+
+  private pagingAlias: string = 'paging';
 
   private limit = 100;
 
@@ -106,6 +110,7 @@ export default class Paginator<Entity> {
 
   private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
+    const escape: EscapeFn = builder.connection.driver.escape;
 
     if (this.hasAfterCursor()) {
       Object.assign(cursors, this.decode(this.afterCursor as string));
@@ -115,40 +120,40 @@ export default class Paginator<Entity> {
 
     builder.innerJoin((paging) => {
       const pagingSubQuery = paging
-        .from(this.entity, 'paging')
-        .select(this.paginationKeys)
+        .from(this.entity, this.pagingAlias)
+        .select(this.paginationKeys.map(key => escape(key)))
         .limit(this.limit + 1)
-        .orderBy(this.buildOrder('paging'));
+        .orderBy(this.buildOrder(this.pagingAlias, escape));
 
       if (Object.keys(cursors).length > 0) {
         pagingSubQuery
-          .andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
+          .andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors, escape)));
       }
 
       return pagingSubQuery;
     },
-    'paging',
-    this.buildPagingInnerJoinCondition());
+    this.pagingAlias,
+    this.buildPagingInnerJoinCondition(escape));
 
-    builder.orderBy(this.buildOrder(this.alias));
+    builder.orderBy(this.buildOrder(this.alias, escape));
 
     return builder;
   }
 
-  private buildCursorQuery(where: WhereExpression, cursors: CursorParam): void {
+  private buildCursorQuery(where: WhereExpression, cursors: CursorParam, escape: EscapeFn): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
     let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}paging.${key} ${operator} :${key}`, params);
-      query = `${query}paging.${key} = :${key} AND `;
+      where.orWhere(`${query}${escape(this.pagingAlias)}.${escape(key)} ${operator} :${key}`, params);
+      query = `${query}${escape(this.pagingAlias)}.${escape(key)} = :${key} AND `;
     });
   }
 
-  private buildPagingInnerJoinCondition(): string {
+  private buildPagingInnerJoinCondition(escape: EscapeFn): string {
     return this.paginationKeys.reduce((prev, next) => {
-      let query = `${this.alias}.${next} = paging.${next}`;
+      let query = `${escape(this.alias)}.${escape(next)} = ${escape(this.pagingAlias)}.${escape(next)}`;
       if (prev !== '') {
         query = `AND ${query}`;
       }
@@ -169,7 +174,7 @@ export default class Paginator<Entity> {
     return '=';
   }
 
-  private buildOrder(alias: string): OrderByCondition {
+  private buildOrder(alias: string, escape: EscapeFn): OrderByCondition {
     let { order } = this;
 
     if (!this.hasAfterCursor() && this.hasBeforeCursor()) {
@@ -178,7 +183,7 @@ export default class Paginator<Entity> {
 
     const orderByCondition: OrderByCondition = {};
     this.paginationKeys.forEach((key) => {
-      orderByCondition[`${alias}.${key}`] = order;
+      orderByCondition[`${escape(alias)}.${escape(key)}`] = order;
     });
 
     return orderByCondition;
