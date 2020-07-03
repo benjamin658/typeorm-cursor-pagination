@@ -43,7 +43,7 @@ export default class Paginator<Entity> {
 
   private alias: string = pascalToUnderscore(this.entity.name);
 
-  private pagingAlias: string = 'paging';
+  private pagingAlias = 'paging';
 
   private limit = 100;
 
@@ -110,7 +110,7 @@ export default class Paginator<Entity> {
 
   private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
-    const escape: EscapeFn = builder.connection.driver.escape;
+    const { escape } = builder.connection.driver;
 
     if (this.hasAfterCursor()) {
       Object.assign(cursors, this.decode(this.afterCursor as string));
@@ -121,7 +121,7 @@ export default class Paginator<Entity> {
     builder.innerJoin((paging) => {
       const pagingSubQuery = paging
         .from(this.entity, this.pagingAlias)
-        .select(this.paginationKeys.map(key => escape(key)))
+        .select(this.paginationKeys.map((key) => escape(key)))
         .limit(this.limit + 1)
         .orderBy(this.buildOrder(this.pagingAlias, escape));
 
