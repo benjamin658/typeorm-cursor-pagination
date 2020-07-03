@@ -9,7 +9,13 @@ Cursor-based pagination works with [TypeORM Query Builder](https://typeorm.io/#/
 
 [Why or What is Cursor-Based Pagination](https://jsonapi.org/profiles/ethanresnick/cursor-pagination/)
 
-> If this project is helpful for you to save your time reinventing the wheel, I truly appreciate you all for your stars ⭐⭐⭐ and contributions 💪💪💪.
+> If this project is helpful to you, I truly appreciate you all for your stars ⭐⭐⭐ and contributions 💪💪💪.
+
+## Recommend Upgrading
+
+Previous version use [TypeORM](https://typeorm.io/#/select-query-builder/using-pagination) `.take()` to retrive paging data, the TypeORM will fetch entity id first, then generating second query and map first query results ids to `IN (...)` query, this may lead to significant performance losses with a large number of first results.
+
+The version `v0.3.0+` uses inner join on sub query entity table with paging parameters and limit, under this approach, the TypeORM will not generate a super long `IN (...)` query.
 
 ## Installation
 
