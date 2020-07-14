@@ -196,7 +196,7 @@ export default class Paginator<Entity> {
   }
 
   private getEntityPropertyType(key: string): string {
-    return Reflect.getOwnMetadata('design:type', this.entity.prototype, key).name.toLowerCase();
+    return Reflect.getMetadata('design:type', this.entity.prototype, key).name.toLowerCase();
   }
 
   private flipOrder(order: Order): Order {
