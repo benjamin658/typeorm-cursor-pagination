@@ -30,6 +30,7 @@ export interface Cursor {
 export interface PagingResult<Entity> {
   data: Entity[];
   cursor: Cursor;
+  totalCount: number | null;
 }
 
 export default class Paginator<Entity> {
@@ -40,6 +41,8 @@ export default class Paginator<Entity> {
   private nextAfterCursor: string | null = null;
 
   private nextBeforeCursor: string | null = null;
+
+  private totalCount: number | null = null;
 
   private alias: string = pascalToUnderscore(this.entity.name);
 
@@ -73,12 +76,10 @@ export default class Paginator<Entity> {
   }
 
   public async paginate(builder: SelectQueryBuilder<Entity>): Promise<PagingResult<Entity>> {
-    const entities = await this.appendPagingQuery(builder).getMany();
-    const hasMore = entities.length > this.limit;
+    const [entities, totalCount] = await this.appendPagingQuery(builder).getManyAndCount();
+    const hasMore = totalCount > entities.length;
 
-    if (hasMore) {
-      entities.splice(entities.length - 1, 1);
-    }
+    this.totalCount = totalCount
 
     if (entities.length === 0) {
       return this.toPagingResult(entities);
@@ -106,6 +107,10 @@ export default class Paginator<Entity> {
     };
   }
 
+  private getTotalCount(): number | null {
+    return this.totalCount
+  }
+
   private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
     const { escape } = builder.connection.driver;
@@ -120,7 +125,7 @@ export default class Paginator<Entity> {
       builder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors, escape)));
     }
 
-    builder.take(this.limit + 1);
+    builder.take(this.limit);
     builder.orderBy(this.buildOrder());
 
     return builder;
@@ -209,6 +214,7 @@ export default class Paginator<Entity> {
     return {
       data: entities,
       cursor: this.getCursor(),
+      totalCount: this.getTotalCount()
     };
   }
 }

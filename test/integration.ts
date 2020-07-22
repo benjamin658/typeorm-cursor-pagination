@@ -12,7 +12,7 @@ describe('TypeORM cursor-based pagination test', () => {
     await createConnection({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
+      port: 54321,
       username: 'test',
       password: 'test',
       database: 'test',
@@ -106,7 +106,22 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.data).length(10);
   });
 
-  it('should return empty array and null cursor if no data', async () => {
+  it('should return an accurate totalCount of entities matching query', async () => {
+    const queryBuilder = createQueryBuilder();
+    const paginator = buildPaginator({
+      entity: User,
+      query: {
+        limit: 1,
+      },
+    });
+
+    const result = await paginator.paginate(queryBuilder);
+
+    expect(result.data).length(1);
+    expect(result.totalCount).to.eq(10);
+  });
+
+  it('should return empty array, null cursor, and 0 totalCount if no data', async () => {
     const queryBuilder = createQueryBuilder().where('user.id > :id', { id: 10 });
     const paginator = buildPaginator({
       entity: User,
@@ -116,6 +131,7 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.data).length(0);
     expect(result.cursor.beforeCursor).to.eq(null);
     expect(result.cursor.afterCursor).to.eq(null);
+    expect(result.totalCount).to.eq(0);
   });
 
   it('should correctly paginate entities with camel-cased pagination keys', async () => {
