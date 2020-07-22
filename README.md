@@ -52,12 +52,13 @@ const { data, cursor } = await paginator.paginate(queryBuilder);
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
 
-**`paginator.paginate(queryBuilder)` returns the entities and cursor for the next iteration**
+**`paginator.paginate(queryBuilder)` returns the entities, cursor for the next iteration, and the totalCount of matching records**
 
 ```typescript
-interface PagingResult<Entity> {
+export interface PagingResult<Entity> {
   data: Entity[];
   cursor: Cursor;
+  totalCount: number | null;
 }
 
 interface Cursor {
@@ -78,7 +79,7 @@ const nextPaginator = buildPaginator({
   },
 });
 
-const { data, cursor } = await nextPaginator.paginate(queryBuilder);
+const { data, cursor, totalCount } = await nextPaginator.paginate(queryBuilder);
 ```
 
 ### Query prev page by `beforeCursor`
