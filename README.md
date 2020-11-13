@@ -98,7 +98,7 @@ const { data, cursor } = await prevPaginator.paginate(queryBuilder);
 
 ## Integration Test with Docker
 
-To start a integration test, run the following command:  
+To start an integration test, run the following command:  
 
 `npm run test:docker`
 
