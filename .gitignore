@@ -108,3 +108,9 @@ dist
 
 # Build result
 lib
+
+# IDEA based editor config (e.g. WebStorm)
+.idea/
+
+# Yarn lockfile
+yarn.lock
