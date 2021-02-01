@@ -31,6 +31,7 @@ const queryBuilder = getConnection()
 
 const paginator = buildPaginator({
   entity: User,
+  paginationKeys: ['id'],
   query: {
     limit: 10,
     order: 'ASC',
@@ -71,6 +72,7 @@ interface Cursor {
 ```typescript
 const nextPaginator = buildPaginator({
   entity: User,
+  paginationKeys: ['id'],
   query: {
     limit: 10,
     order: 'ASC',
@@ -86,6 +88,7 @@ const { data, cursor } = await nextPaginator.paginate(queryBuilder);
 ```typescript
 const prevPaginator = buildPaginator({
   entity: User,
+  paginationKeys: ['id'],
   query: {
     limit: 10,
     order: 'ASC',

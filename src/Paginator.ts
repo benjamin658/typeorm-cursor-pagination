@@ -132,8 +132,8 @@ export default class Paginator<Entity> {
     let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}${escape(this.alias)}.${escape(key)} ${operator} :${key}`, params);
-      query = `${query}${escape(this.alias)}.${escape(key)} = :${key} AND `;
+      where.orWhere(`${query}${escape(this.alias)}."${key}" ${operator} :${key}`, params);
+      query = `${query}${escape(this.alias)}."${key}" = :${key} AND `;
     });
   }
 
