@@ -113,6 +113,6 @@ All contributions are welcome, open a pull request or issue any time.
 
 ## License
 
-© Ben Hu (benjamin658), 2020-NOW
+© Ben Hu (benjamin658), 2021-NOW
 
 Released under the [MIT License](https://github.com/benjamin658/typeorm-cursor-pagination/blob/master/License)
