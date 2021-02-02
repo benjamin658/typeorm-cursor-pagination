@@ -108,7 +108,6 @@ export default class Paginator<Entity> {
 
   private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
-    const { escape } = builder.connection.driver;
 
     if (this.hasAfterCursor()) {
       Object.assign(cursors, this.decode(this.afterCursor as string));
@@ -117,7 +116,7 @@ export default class Paginator<Entity> {
     }
 
     if (Object.keys(cursors).length > 0) {
-      builder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors, escape)));
+      builder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
     }
 
     builder.take(this.limit + 1);
@@ -126,14 +125,14 @@ export default class Paginator<Entity> {
     return builder;
   }
 
-  private buildCursorQuery(where: WhereExpression, cursors: CursorParam, escape: EscapeFn): void {
+  private buildCursorQuery(where: WhereExpression, cursors: CursorParam): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
     let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}${escape(this.alias)}."${key}" ${operator} :${key}`, params);
-      query = `${query}${escape(this.alias)}."${key}" = :${key} AND `;
+      where.orWhere(`${query}${this.alias}.${key} ${operator} :${key}`, params);
+      query = `${query}${this.alias}.${key} = :${key} AND `;
     });
   }
 
