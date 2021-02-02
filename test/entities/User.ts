@@ -24,7 +24,7 @@ export class User {
     type: 'timestamp',
     nullable: false,
   })
-  public timestamp!: Date
+  public camelCaseColumn!: Date
 
   @OneToMany(
     () => Photo,

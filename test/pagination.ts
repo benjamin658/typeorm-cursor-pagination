@@ -25,10 +25,10 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   it('should paginate correctly with before and after cursor', async () => {
-    const queryBuilder = createQueryBuilder().leftJoinAndSelect('user.photos', 'photo');
+    const queryBuilder = createQueryBuilder(User, 'user').leftJoinAndSelect('user.photos', 'photo');
     const firstPagePaginator = buildPaginator({
       entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
+      paginationKeys: ['id', 'name'],
       query: {
         limit: 1,
       },
@@ -37,7 +37,7 @@ describe('TypeORM cursor-based pagination test', () => {
 
     const nextPagePaginator = buildPaginator({
       entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
+      paginationKeys: ['id', 'name'],
       query: {
         limit: 1,
         afterCursor: firstPageResult.cursor.afterCursor as string,
@@ -47,7 +47,7 @@ describe('TypeORM cursor-based pagination test', () => {
 
     const prevPagePaginator = buildPaginator({
       entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
+      paginationKeys: ['id', 'name'],
       query: {
         limit: 1,
         beforeCursor: nextPageResult.cursor.beforeCursor as string,
@@ -69,7 +69,7 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   it('should return entities with given order', async () => {
-    const queryBuilder = createQueryBuilder();
+    const queryBuilder = createQueryBuilder(User, 'user');
     const ascPaginator = buildPaginator({
       entity: User,
       query: {
@@ -93,21 +93,21 @@ describe('TypeORM cursor-based pagination test', () => {
   });
 
   it('should return entities with given limit', async () => {
-    const queryBuilder = createQueryBuilder();
+    const queryBuilder = createQueryBuilder(User, 'user');
     const paginator = buildPaginator({
       entity: User,
       query: {
-        limit: 10,
+        limit: 5,
       },
     });
 
     const result = await paginator.paginate(queryBuilder);
 
-    expect(result.data).length(10);
+    expect(result.data).length(5);
   });
 
   it('should return empty array and null cursor if no data', async () => {
-    const queryBuilder = createQueryBuilder().where('user.id > :id', { id: 10 });
+    const queryBuilder = createQueryBuilder(User, 'user').where('user.id > :id', { id: 10 });
     const paginator = buildPaginator({
       entity: User,
     });
@@ -116,17 +116,6 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.data).length(0);
     expect(result.cursor.beforeCursor).to.eq(null);
     expect(result.cursor.afterCursor).to.eq(null);
-  });
-
-  it('should correctly paginate entities with camel-cased pagination keys', async () => {
-    const queryBuilder = createQueryBuilder();
-    const paginator = buildPaginator({
-      entity: User,
-      paginationKeys: ['createdAt', 'id'],
-    });
-    const result = await paginator.paginate(queryBuilder);
-
-    expect(result.data).length(10);
   });
 
   after(async () => {
