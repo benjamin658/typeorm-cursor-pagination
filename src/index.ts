@@ -11,14 +11,14 @@ export interface PagingQuery {
   order?: Order;
 }
 
-export interface PagniationOtions<Entity> {
+export interface PaginationOptions<Entity> {
   entity: ObjectType<Entity>;
   alias?: string;
   query?: PagingQuery;
   paginationKeys?: Extract<keyof Entity, string>[];
 }
 
-export function buildPaginator<Entity>(options: PagniationOtions<Entity>): Paginator<Entity> {
+export function buildPaginator<Entity>(options: PaginationOptions<Entity>): Paginator<Entity> {
   const {
     entity,
     query = {},
