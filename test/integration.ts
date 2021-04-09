@@ -5,7 +5,9 @@ import { createQueryBuilder } from './utils/createQueryBuilder';
 import { prepareData } from './utils/prepareData';
 import { User } from './entities/User';
 import { Photo } from './entities/Photo';
-import { buildPaginator } from '../src/index';
+import { buildPaginator } from '../src';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { PagingResult } from '../lib';
 
 describe('TypeORM cursor-based pagination test', () => {
   before(async () => {
@@ -16,6 +18,7 @@ describe('TypeORM cursor-based pagination test', () => {
       username: 'test',
       password: 'test',
       database: 'test',
+      namingStrategy: new SnakeNamingStrategy(),
       synchronize: true,
       entities: [User, Photo],
       logging: true,
@@ -24,48 +27,78 @@ describe('TypeORM cursor-based pagination test', () => {
     await prepareData();
   });
 
-  it('should paginate correctly with before and after cursor', async () => {
-    const queryBuilder = createQueryBuilder().leftJoinAndSelect('user.photos', 'photo');
-    const firstPagePaginator = buildPaginator({
-      entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
-      query: {
-        limit: 1,
-      },
+  describe('should paginate correctly with before and after cursor', () => {
+
+    let firstPageResult: PagingResult<User>;
+    let nextPageResult: PagingResult<User>;
+    let prevPageResult: PagingResult<User>;
+
+    before(async () => {
+      const queryBuilder = createQueryBuilder().leftJoinAndSelect('user.photos', 'photo');
+      const firstPagePaginator = buildPaginator<User>({
+        entity: User,
+        paginationKeys: ['id', 'name', 'timestamp'],
+        query: {
+          limit: 1,
+        },
+      });
+      firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
+      const nextPagePaginator = buildPaginator<User>({
+        entity: User,
+        paginationKeys: ['id', 'name', 'timestamp'],
+        query: {
+          limit: 1,
+          afterCursor: firstPageResult.cursor.afterCursor as string,
+        },
+      });
+      nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
+
+      const prevPagePaginator = buildPaginator<User>({
+        entity: User,
+        paginationKeys: ['id', 'name', 'timestamp'],
+        query: {
+          limit: 1,
+          beforeCursor: nextPageResult.cursor.beforeCursor as string,
+        },
+      });
+      prevPageResult = await prevPagePaginator.paginate(queryBuilder.clone());
     });
-    const firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
 
-    const nextPagePaginator = buildPaginator({
-      entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
-      query: {
-        limit: 1,
-        afterCursor: firstPageResult.cursor.afterCursor as string,
-      },
+    it('the first page result has a null before cursor', () => {
+      expect(firstPageResult.cursor.beforeCursor).to.eq(null);
     });
-    const nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
 
-    const prevPagePaginator = buildPaginator({
-      entity: User,
-      paginationKeys: ['id', 'name', 'timestamp'],
-      query: {
-        limit: 1,
-        beforeCursor: nextPageResult.cursor.beforeCursor as string,
-      },
+    it('the first page result has a non-null after cursor', () => {
+      expect(firstPageResult.cursor.afterCursor).to.not.eq(null);
     });
-    const prevPageResult = await prevPagePaginator.paginate(queryBuilder.clone());
 
-    expect(firstPageResult.cursor.beforeCursor).to.eq(null);
-    expect(firstPageResult.cursor.afterCursor).to.not.eq(null);
-    expect(firstPageResult.data[0].id).to.eq(10);
+    it('the first page result has id 10 in the first item', () => {
+      expect(firstPageResult.data[0].id).to.eq(10);
+    });
 
-    expect(nextPageResult.cursor.beforeCursor).to.not.eq(null);
-    expect(nextPageResult.cursor.afterCursor).to.not.eq(null);
-    expect(nextPageResult.data[0].id).to.eq(9);
+    it('the next page result has a non-null before cursor', () => {
+      expect(nextPageResult.cursor.beforeCursor).to.not.eq(null);
+    });
 
-    expect(prevPageResult.cursor.beforeCursor).to.eq(null);
-    expect(prevPageResult.cursor.afterCursor).to.not.eq(null);
-    expect(prevPageResult.data[0].id).to.eq(10);
+    it('the next page result has a non-null after cursor', () => {
+      expect(nextPageResult.cursor.afterCursor).to.not.eq(null);
+    });
+
+    it('the next page result has 9 as the first item', () => {
+      expect(nextPageResult.data[0].id).to.eq(9);
+    });
+
+    it('the prev page result has a null before cursor', () => {
+      expect(prevPageResult.cursor.beforeCursor).to.eq(null);
+    });
+
+    it('the prev page result has a non-null after cursor', () => {
+      expect(prevPageResult.cursor.afterCursor).to.not.eq(null);
+    });
+
+    it('the prev page result has 10 as the first item', () => {
+      expect(prevPageResult.data[0].id).to.eq(10);
+    });
   });
 
   it('should return entities with given order', async () => {
@@ -120,7 +153,7 @@ describe('TypeORM cursor-based pagination test', () => {
 
   it('should correctly paginate entities with camel-cased pagination keys', async () => {
     const queryBuilder = createQueryBuilder();
-    const paginator = buildPaginator({
+    const paginator = buildPaginator<User>({
       entity: User,
       paginationKeys: ['createdAt', 'id'],
     });

@@ -16,6 +16,8 @@ import {
 
 export type Order = 'ASC' | 'DESC';
 
+export type Nulls = 'NULLS FIRST' | 'NULLS LAST';
+
 export type EscapeFn = (name: string) => string;
 
 interface CursorParam {
@@ -47,6 +49,8 @@ export default class Paginator<Entity> {
 
   private order: Order = 'DESC';
 
+  private nulls: Nulls = 'NULLS FIRST';
+
   public constructor(
     private entity: ObjectType<Entity>,
     private paginationKeys: Extract<keyof Entity, string>[],
@@ -70,6 +74,10 @@ export default class Paginator<Entity> {
 
   public setOrder(order: Order): void {
     this.order = order;
+  }
+
+  public setNulls(nulls: Nulls): void {
+    this.nulls = nulls;
   }
 
   public async paginate(builder: SelectQueryBuilder<Entity>): Promise<PagingResult<Entity>> {
@@ -150,6 +158,7 @@ export default class Paginator<Entity> {
   }
 
   private buildOrder(): OrderByCondition {
+    const { nulls } = this;
     let { order } = this;
 
     if (!this.hasAfterCursor() && this.hasBeforeCursor()) {
@@ -158,7 +167,7 @@ export default class Paginator<Entity> {
 
     const orderByCondition: OrderByCondition = {};
     this.paginationKeys.forEach((key) => {
-      orderByCondition[`${this.alias}.${key}`] = order;
+      orderByCondition[`${this.alias}.${key}`] = { order, nulls };
     });
 
     return orderByCondition;

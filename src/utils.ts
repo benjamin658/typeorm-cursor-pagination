@@ -7,9 +7,9 @@ export function btoa(value: string): string {
 }
 
 export function encodeByType(type: string, value: any): string | null {
-  if (value === null) return null;
+  if (type === null || value === null) return null;
 
-  switch (type) {
+  switch (type.toString()) {
     case 'date': {
       return (value as Date).getTime().toString();
     }
@@ -19,13 +19,23 @@ export function encodeByType(type: string, value: any): string | null {
     case 'string': {
       return encodeURIComponent(value);
     }
+    case 'object': {
+      const date = new Date(value);
+      if (date && date.getFullYear() > 2017 && date.getFullYear() < 2100) {
+        return date.getTime().toString();
+      }
+      if (!Number.isNaN(parseInt(value, 10))) {
+        return `${value}`;
+      }
+      throw new Error(`unknown object in cursor: ${JSON.stringify(value)}`);
+    }
     default: {
       throw new Error(`unknown type in cursor: [${type}]${value}`);
     }
   }
 }
 
-export function decodeByType(type: string, value: string): string | number | Date {
+export function decodeByType(type: string, value: string): string | number | Date | null {
   switch (type) {
     case 'date': {
       const timestamp = parseInt(value, 10);
@@ -49,6 +59,21 @@ export function decodeByType(type: string, value: string): string | number | Dat
 
     case 'string': {
       return decodeURIComponent(value);
+    }
+
+    case 'object': {
+      if (String(value) === 'null') {
+        return null;
+      }
+      const num = parseInt(value, 10);
+      if (!Number.isNaN(num)) {
+        const date = new Date(num);
+        if (date?.getFullYear() > 2017 && date?.getFullYear() < 2100) {
+          return date;
+        }
+        return num;
+      }
+      throw new Error(`unknown object in cursor: [${type}]${value}`);
     }
 
     default: {
