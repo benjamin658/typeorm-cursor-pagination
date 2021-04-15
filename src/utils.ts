@@ -19,14 +19,26 @@ export function encodeByType(type: string, value: any): string | null {
     case 'string': {
       return encodeURIComponent(value);
     }
-    default: {
-      throw new Error(`unknown type in cursor: [${type}]${value}`);
+    case 'object': {
+      /**
+       * if reflection type is Object, check whether an object is a date.
+       * see: https://github.com/rbuckton/reflect-metadata/issues/84
+       */
+      if (typeof value.getTime === 'function') {
+        return (value as Date).getTime().toString();
+      }
+
+      break;
     }
+    default: break;
   }
+
+  throw new Error(`unknown type in cursor: [${type}]${value}`);
 }
 
 export function decodeByType(type: string, value: string): string | number | Date {
   switch (type) {
+    case 'object':
     case 'date': {
       const timestamp = parseInt(value, 10);
 
