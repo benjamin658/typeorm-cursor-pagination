@@ -16,4 +16,8 @@ describe('Reflect.getMetadata Date type is Object test', () => {
 
     expect(decoded).to.be.a('date');
   });
+
+  it('should throw error with object type and non date value', () => {
+    expect(() => encodeByType('object', { foo: 'bar' })).to.throw(/unknown type in cursor/);
+  });
 });
