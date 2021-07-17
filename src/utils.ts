@@ -28,6 +28,19 @@ export function encodeByType(type: string, value: any): string | null {
         return (value as Date).getTime().toString();
       }
 
+      /**
+       * Support for branded id's having the following structure
+       *
+       * interface ConversationId extends String {
+       *     _conversationBrand: string;
+       * }
+       *
+       * the above interface will support toString() method
+       */
+      if (typeof value.toString === 'function') {
+        return value.toString();
+      }
+
       break;
     }
     default: break;
@@ -38,7 +51,21 @@ export function encodeByType(type: string, value: any): string | null {
 
 export function decodeByType(type: string, value: string): string | number | Date {
   switch (type) {
-    case 'object':
+    case 'object': {
+      /**
+       * Support for branded id's having the following structure
+       *
+       * interface ConversationId extends String {
+       *     _conversationBrand: string;
+       * }
+       *
+       * the above interface will support toString() method
+       */
+      if (typeof value.toString === 'function') {
+        return value.toString();
+      }
+    }
+
     case 'date': {
       const timestamp = parseInt(value, 10);
 
