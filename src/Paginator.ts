@@ -117,6 +117,20 @@ export default class Paginator<Entity> {
 
     if (Object.keys(cursors).length > 0) {
       builder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
+      let wheresLength = builder.expressionMap.wheres.length;
+      for (let index = 0; index < wheresLength;) {
+        if (builder.expressionMap.wheres[index].type === 'or') {
+          builder.expressionMap.wheres.splice(
+            index,
+            0,
+            builder.expressionMap.wheres[wheresLength - 1],
+          );
+          wheresLength += 1;
+          index += 2;
+        } else {
+          index += 1;
+        }
+      }
     }
 
     builder.take(this.limit + 1);
