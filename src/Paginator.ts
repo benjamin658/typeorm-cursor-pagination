@@ -3,7 +3,7 @@ import {
   ObjectType,
   OrderByCondition,
   SelectQueryBuilder,
-  WhereExpression,
+  WhereExpressionBuilder,
 } from 'typeorm';
 
 import {
@@ -18,7 +18,7 @@ export type Order = 'ASC' | 'DESC';
 
 export type EscapeFn = (name: string) => string;
 
-interface CursorParam {
+export interface CursorParam {
   [key: string]: any;
 }
 
@@ -125,7 +125,7 @@ export default class Paginator<Entity> {
     return builder;
   }
 
-  private buildCursorQuery(where: WhereExpression, cursors: CursorParam): void {
+  private buildCursorQuery(where: WhereExpressionBuilder, cursors: CursorParam): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
     let query = '';
