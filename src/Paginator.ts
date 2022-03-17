@@ -50,6 +50,7 @@ export default class Paginator<Entity> {
   public constructor(
     private entity: ObjectType<Entity>,
     private paginationKeys: Extract<keyof Entity, string>[],
+    private paginationUniqueKey: Extract<keyof Entity, string>,
   ) { }
 
   public setAlias(alias: string): void {
@@ -128,11 +129,18 @@ export default class Paginator<Entity> {
   private buildCursorQuery(where: WhereExpressionBuilder, cursors: CursorParam): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
-    let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}${this.alias}.${key} ${operator} :${key}`, params);
-      query = `${query}${this.alias}.${key} = :${key} AND `;
+      where.andWhere(new Brackets((qb) => {
+        const paramsHolder = {
+          [`${key}_1`]: params[key],
+          [`${key}_2`]: params[key],
+        };
+        qb.where(`${this.alias}.${key} ${operator} :${key}_1`, paramsHolder);
+        if (this.paginationUniqueKey !== key) {
+          qb.orWhere(`${this.alias}.${key} = :${key}_2`, paramsHolder);
+        }
+      }));
     });
   }
 

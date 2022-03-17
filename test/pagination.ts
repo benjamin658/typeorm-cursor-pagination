@@ -68,6 +68,31 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(prevPageResult.data[0].id).to.eq(10);
   });
 
+  it('should paginate correctly with a float column in pagination keys', async () => {
+    const queryBuilder = createQueryBuilder(User, 'user');
+    const firstPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['balance', 'id'],
+      query: {
+        limit: 2,
+      },
+    });
+    const firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
+
+    const nextPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['balance', 'id'],
+      query: {
+        limit: 2,
+        afterCursor: firstPageResult.cursor.afterCursor as string,
+      },
+    });
+    const nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
+
+    expect(firstPageResult.data[1].id).to.not.eq(nextPageResult.data[0].id);
+    expect(firstPageResult.data[1].balance).to.be.above(nextPageResult.data[0].balance);
+  });
+
   it('should return entities with given order', async () => {
     const queryBuilder = createQueryBuilder(User, 'user');
     const ascPaginator = buildPaginator({

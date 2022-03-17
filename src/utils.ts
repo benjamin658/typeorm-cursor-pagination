@@ -50,7 +50,7 @@ export function decodeByType(type: string, value: string): string | number | Dat
     }
 
     case 'number': {
-      const num = parseInt(value, 10);
+      const num = parseFloat(value);
 
       if (Number.isNaN(num)) {
         throw new Error('number column in cursor should be a valid number');

@@ -47,6 +47,7 @@ const { data, cursor } = await paginator.paginate(queryBuilder);
 * `entity` [required]: TypeORM entity.
 * `alias` [optional]: alias of the query builder.
 * `paginationKeys` [optional]: array of the fields to be used for the pagination, **default is `id`**.
+* `paginationUniqueKey` [optional]: field to be used as a unique descriminator for the pagination, **default is `id`**.
 * `query` [optional]:
   * `limit`: limit the number of records returned, **default is 100**.
   * `order`: **ASC** or **DESC**, **default is DESC**.

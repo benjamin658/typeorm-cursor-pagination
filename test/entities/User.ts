@@ -21,6 +21,12 @@ export class User {
   public name!: string;
 
   @Column({
+    type: 'float',
+    nullable: false,
+  })
+  public balance!: number;
+  
+  @Column({
     type: 'timestamp',
     nullable: false,
   })
