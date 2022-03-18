@@ -14,7 +14,10 @@ import {
   pascalToUnderscore,
 } from './utils';
 
-export type Order = 'ASC' | 'DESC';
+export enum Order {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
 
 export type EscapeFn = (name: string) => string;
 
@@ -45,13 +48,13 @@ export default class Paginator<Entity> {
 
   private limit = 100;
 
-  private order: Order = 'DESC';
+  private order: Order = Order.DESC;
 
   public constructor(
     private entity: ObjectType<Entity>,
     private paginationKeys: Extract<keyof Entity, string>[],
     private paginationUniqueKey: Extract<keyof Entity, string>,
-  ) { }
+  ) {}
 
   public setAlias(alias: string): void {
     this.alias = alias;
@@ -73,7 +76,9 @@ export default class Paginator<Entity> {
     this.order = order;
   }
 
-  public async paginate(builder: SelectQueryBuilder<Entity>): Promise<PagingResult<Entity>> {
+  public async paginate(
+    builder: SelectQueryBuilder<Entity>,
+  ): Promise<PagingResult<Entity>> {
     const entities = await this.appendPagingQuery(builder).getMany();
     const hasMore = entities.length > this.limit;
 
@@ -107,7 +112,9 @@ export default class Paginator<Entity> {
     };
   }
 
-  private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
+  private appendPagingQuery(
+    builder: SelectQueryBuilder<Entity>,
+  ): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
 
     if (this.hasAfterCursor()) {
@@ -117,7 +124,9 @@ export default class Paginator<Entity> {
     }
 
     if (Object.keys(cursors).length > 0) {
-      builder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
+      builder.andWhere(
+        new Brackets((where) => this.buildCursorQuery(where, cursors)),
+      );
     }
 
     builder.take(this.limit + 1);
@@ -126,31 +135,36 @@ export default class Paginator<Entity> {
     return builder;
   }
 
-  private buildCursorQuery(where: WhereExpressionBuilder, cursors: CursorParam): void {
+  private buildCursorQuery(
+    where: WhereExpressionBuilder,
+    cursors: CursorParam,
+  ): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.andWhere(new Brackets((qb) => {
-        const paramsHolder = {
-          [`${key}_1`]: params[key],
-          [`${key}_2`]: params[key],
-        };
-        qb.where(`${this.alias}.${key} ${operator} :${key}_1`, paramsHolder);
-        if (this.paginationUniqueKey !== key) {
-          qb.orWhere(`${this.alias}.${key} = :${key}_2`, paramsHolder);
-        }
-      }));
+      where.andWhere(
+        new Brackets((qb) => {
+          const paramsHolder = {
+            [`${key}_1`]: params[key],
+            [`${key}_2`]: params[key],
+          };
+          qb.where(`${this.alias}.${key} ${operator} :${key}_1`, paramsHolder);
+          if (this.paginationUniqueKey !== key) {
+            qb.orWhere(`${this.alias}.${key} = :${key}_2`, paramsHolder);
+          }
+        }),
+      );
     });
   }
 
   private getOperator(): string {
     if (this.hasAfterCursor()) {
-      return this.order === 'ASC' ? '>' : '<';
+      return this.order === Order.ASC ? '>' : '<';
     }
 
     if (this.hasBeforeCursor()) {
-      return this.order === 'ASC' ? '<' : '>';
+      return this.order === Order.ASC ? '<' : '>';
     }
 
     return '=';
@@ -180,11 +194,13 @@ export default class Paginator<Entity> {
   }
 
   private encode(entity: Entity): string {
-    const payload = this.paginationKeys.map((key) => {
-      const type = this.getEntityPropertyType(key);
-      const value = encodeByType(type, entity[key]);
-      return `${key}:${value}`;
-    }).join(',');
+    const payload = this.paginationKeys
+      .map((key) => {
+        const type = this.getEntityPropertyType(key);
+        const value = encodeByType(type, entity[key]);
+        return `${key}:${value}`;
+      })
+      .join(',');
 
     return btoa(payload);
   }
@@ -203,13 +219,15 @@ export default class Paginator<Entity> {
   }
 
   private getEntityPropertyType(key: string): string {
-    return Reflect.getMetadata('design:type', this.entity.prototype, key).name.toLowerCase();
+    return Reflect.getMetadata(
+      'design:type',
+      this.entity.prototype,
+      key,
+    ).name.toLowerCase();
   }
 
   private flipOrder(order: Order): Order {
-    return order === 'ASC'
-      ? 'DESC'
-      : 'ASC';
+    return order === Order.ASC ? Order.DESC : Order.ASC;
   }
 
   private toPagingResult<Entity>(entities: Entity[]): PagingResult<Entity> {

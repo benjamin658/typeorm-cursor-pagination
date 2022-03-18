@@ -5,7 +5,7 @@ import { createQueryBuilder } from './utils/createQueryBuilder';
 import { prepareData } from './utils/prepareData';
 import { User } from './entities/User';
 import { Photo } from './entities/Photo';
-import { buildPaginator } from '../src/index';
+import { buildPaginator, Order } from '../src/index';
 
 describe('TypeORM cursor-based pagination test', () => {
   before(async () => {
@@ -106,7 +106,7 @@ describe('TypeORM cursor-based pagination test', () => {
       entity: User,
       query: {
         limit: 1,
-        order: 'DESC',
+        order: Order.DESC,
       },
     });
 
