@@ -6,7 +6,7 @@ export interface PagingQuery {
   afterCursor?: string;
   beforeCursor?: string;
   limit?: number;
-  order?: Order;
+  order?: Order | 'ASC' | 'DESC';
 }
 
 export interface PaginationOptions<Entity> {
@@ -43,7 +43,7 @@ export function buildPaginator<Entity>(options: PaginationOptions<Entity>): Pagi
   }
 
   if (query.order) {
-    paginator.setOrder(query.order);
+    paginator.setOrder(query.order as Order);
   }
 
   return paginator;
