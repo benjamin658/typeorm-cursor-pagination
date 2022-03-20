@@ -9,16 +9,12 @@ function setTimestamp(i: number): Date {
   return now;
 }
 
-function getRandomFloat(min: number, max: number): number {
-  const str = (Math.random() * (max - min) + min).toFixed(2);
-
-  return parseFloat(str);
-}
+const balances = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2];
 
 export async function prepareData(): Promise<void> {
   const data = [...Array(10).keys()].map((i) => ({
     name: `user${i}`,
-    balance: getRandomFloat(1, 2),
+    balance: balances[i],
     camelCaseColumn: setTimestamp(i),
     photos: [
       {

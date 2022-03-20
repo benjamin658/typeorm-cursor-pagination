@@ -91,6 +91,8 @@ describe('TypeORM cursor-based pagination test', () => {
 
     expect(firstPageResult.data[1].id).to.not.eq(nextPageResult.data[0].id);
     expect(firstPageResult.data[1].balance).to.be.above(nextPageResult.data[0].balance);
+    expect(firstPageResult.data[0].id).to.eq(10);
+    expect(nextPageResult.data[0].id).to.eq(8);
   });
 
   it('should return entities with given order', async () => {
