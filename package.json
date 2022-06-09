@@ -1,6 +1,6 @@
 {
   "name": "typeorm-cursor-pagination",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Cursor-based pagination works with TypeORM.",
   "main": "lib/index.js",
   "scripts": {
@@ -39,7 +39,7 @@
     "pg": "^8.7.3",
     "rimraf": "^3.0.2",
     "ts-node": "^8.6.2",
-    "typeorm": "^0.2.43",
+    "typeorm": "^0.3.6",
     "typescript": "^3.8.3"
   },
   "peerDependencies": {
