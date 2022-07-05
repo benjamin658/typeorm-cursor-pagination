@@ -1,6 +1,7 @@
 # TypeORM Cursor Pagination
 
 [![Build Status](https://travis-ci.com/benjamin658/typeorm-cursor-pagination.svg?branch=master)](https://travis-ci.com/benjamin658/typeorm-cursor-pagination)
+[![codecov](https://codecov.io/gh/benjamin658/typeorm-cursor-pagination/branch/master/graph/badge.svg?token=R1PBLUITU7)](https://codecov.io/gh/benjamin658/typeorm-cursor-pagination)
 [![npm version](https://badge.fury.io/js/typeorm-cursor-pagination.svg)](https://badge.fury.io/js/typeorm-cursor-pagination)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9ad73ee4890101f8ac38/maintainability)](https://codeclimate.com/github/benjamin658/typeorm-cursor-pagination/maintainability)
 [![license](https://img.shields.io/github/license/benjamin658/typeorm-cursor-pagination)](https://github.com/benjamin658/typeorm-cursor-pagination/blob/master/License)
