@@ -130,7 +130,11 @@ export default class Paginator<Entity> {
     }
 
     builder.take(this.limit + 1);
-    builder.orderBy(this.buildOrder());
+
+    const paginationKeyOrders = this.buildOrder();
+    Object.keys(paginationKeyOrders).forEach(orderKey => {
+      builder.addOrderBy(orderKey, paginationKeyOrders[orderKey] === 'ASC' ? 'ASC' : 'DESC')
+    });
 
     return builder;
   }
