@@ -116,6 +116,7 @@ export default class Paginator<Entity> {
     builder: SelectQueryBuilder<Entity>,
   ): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
+    const clonedBuilder = new SelectQueryBuilder<Entity>(builder)
 
     if (this.hasAfterCursor()) {
       Object.assign(cursors, this.decode(this.afterCursor as string));
@@ -124,15 +125,15 @@ export default class Paginator<Entity> {
     }
 
     if (Object.keys(cursors).length > 0) {
-      builder.andWhere(
+      clonedBuilder.andWhere(
         new Brackets((where) => this.buildCursorQuery(where, cursors)),
       );
     }
 
-    builder.take(this.limit + 1);
-    builder.orderBy(this.buildOrder());
+    clonedBuilder.take(this.limit + 1);
+    clonedBuilder.orderBy(this.buildOrder());
 
-    return builder;
+    return clonedBuilder;
   }
 
   private buildCursorQuery(
