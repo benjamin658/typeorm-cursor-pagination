@@ -69,20 +69,6 @@ export function decodeByType(type: string, value: string): string | number | Dat
   }
 }
 
-export function stringToBool(value: string): boolean {
-  return value === 'true';
-}
-
-export function stringToNumber(value: string): number {
-  const result = parseInt(value, 10);
-
-  if (Number.isNaN(result)) {
-    return 0;
-  }
-
-  return result;
-}
-
 export function camelOrPascalToUnderscore(str: string): string {
   return str.split(/(?=[A-Z])/).join('_').toLowerCase();
 }
