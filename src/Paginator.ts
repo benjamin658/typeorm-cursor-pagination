@@ -53,7 +53,6 @@ export default class Paginator<Entity> {
   public constructor(
     private entity: ObjectType<Entity>,
     private paginationKeys: Extract<keyof Entity, string>[],
-    private paginationUniqueKey: Extract<keyof Entity, string>,
   ) {}
 
   public setAlias(alias: string): void {
@@ -116,7 +115,7 @@ export default class Paginator<Entity> {
     builder: SelectQueryBuilder<Entity>,
   ): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
-    const clonedBuilder = new SelectQueryBuilder<Entity>(builder)
+    const clonedBuilder = new SelectQueryBuilder<Entity>(builder);
 
     if (this.hasAfterCursor()) {
       Object.assign(cursors, this.decode(this.afterCursor as string));
@@ -136,26 +135,14 @@ export default class Paginator<Entity> {
     return clonedBuilder;
   }
 
-  private buildCursorQuery(
-    where: WhereExpressionBuilder,
-    cursors: CursorParam,
-  ): void {
+  private buildCursorQuery(where: WhereExpressionBuilder, cursors: CursorParam): void {
     const operator = this.getOperator();
     const params: CursorParam = {};
+    let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.andWhere(
-        new Brackets((qb) => {
-          const paramsHolder = {
-            [`${key}_1`]: params[key],
-            [`${key}_2`]: params[key],
-          };
-          qb.where(`${this.alias}.${key} ${operator} :${key}_1`, paramsHolder);
-          if (this.paginationUniqueKey !== key) {
-            qb.orWhere(`${this.alias}.${key} = :${key}_2`, paramsHolder);
-          }
-        }),
-      );
+      where.orWhere(`${query}${this.alias}.${key} ${operator} :${key}`, params);
+      query = `${query}${this.alias}.${key} = :${key} AND `;
     });
   }
 
