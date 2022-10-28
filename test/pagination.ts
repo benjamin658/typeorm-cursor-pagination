@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { createConnection, getConnection } from 'typeorm';
 
 import { createQueryBuilder } from './utils/createQueryBuilder';
-import { prepareData } from './utils/prepareData';
+import { prepareData, setTimestamp } from './utils/prepareData';
 import { User } from './entities/User';
 import { Photo } from './entities/Photo';
 import { buildPaginator } from '../src/index';
@@ -116,6 +116,39 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.data).length(0);
     expect(result.cursor.beforeCursor).to.eq(null);
     expect(result.cursor.afterCursor).to.eq(null);
+  });
+
+  describe('when the query has an addOrderBy defined', () => {
+    it('should return entities with the correct order', async () => {
+      const data = [
+        {
+          name: 'z-user',
+          camelCaseColumn: setTimestamp(1),
+        },
+        {
+          name: 'a-user',
+          camelCaseColumn: setTimestamp(2),
+        },
+      ];
+
+      await getConnection().getRepository(User).save(data);
+
+      const queryBuilder = createQueryBuilder(User, 'user').addOrderBy(
+        'UPPER(user.name)',
+        'ASC',
+      );
+      const paginator = buildPaginator({
+        entity: User,
+        query: {
+          limit: 1,
+        },
+      });
+
+      const result = await paginator.paginate(queryBuilder);
+
+      expect(result.data[0].name).to.eq(data[1].name);
+      expect(result.data[0].name).to.eq(data[0].name);
+    });
   });
 
   after(async () => {

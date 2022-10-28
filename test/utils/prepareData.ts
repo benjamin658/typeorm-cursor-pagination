@@ -2,7 +2,7 @@ import { getConnection } from 'typeorm';
 import { User } from '../entities/User';
 import { Snake } from '../entities/Snake';
 
-function setTimestamp(i: number): Date {
+export function setTimestamp(i: number): Date {
   const now = new Date();
   now.setMinutes(now.getMinutes() + i);
 
