@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/benjamin658/typeorm-cursor-pagination/compare/v0.9.1...v0.10.0) (2022-10-31)
+
+
+### Bug Fixes
+
+* remove paginationUniqueKey option ([e43f328](https://github.com/benjamin658/typeorm-cursor-pagination/commit/e43f3282958e79f3d0c86ae1be9d76b20a40d3a8))
+
 ### [0.9.1](https://github.com/benjamin658/typeorm-cursor-pagination/compare/v0.9.0...v0.9.1) (2022-07-12)
 
 
