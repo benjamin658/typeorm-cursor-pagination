@@ -1,5 +1,6 @@
 import {
   Brackets,
+  ObjectLiteral,
   ObjectType,
   OrderByCondition,
   SelectQueryBuilder,
@@ -35,7 +36,7 @@ export interface PagingResult<Entity> {
   cursor: Cursor;
 }
 
-export default class Paginator<Entity> {
+export default class Paginator<Entity extends ObjectLiteral> {
   private afterCursor: string | null = null;
 
   private beforeCursor: string | null = null;

@@ -1,4 +1,4 @@
-import { ObjectType } from 'typeorm';
+import { ObjectLiteral, ObjectType } from 'typeorm';
 
 import Paginator, { Order } from './Paginator';
 
@@ -16,7 +16,9 @@ export interface PaginationOptions<Entity> {
   paginationKeys?: Extract<keyof Entity, string>[];
 }
 
-export function buildPaginator<Entity>(options: PaginationOptions<Entity>): Paginator<Entity> {
+export function buildPaginator<Entity extends ObjectLiteral>(
+  options: PaginationOptions<Entity>,
+): Paginator<Entity> {
   const {
     entity,
     query = {},
