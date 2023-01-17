@@ -50,6 +50,11 @@ export function decodeByType(type: string, value: string): string | number | Dat
     }
 
     case 'number': {
+      // Support null/undefined columns
+      if (value == null) {
+        return value;
+      }
+      
       const num = parseFloat(value);
 
       if (Number.isNaN(num)) {
