@@ -41,6 +41,8 @@ export default class Paginator<Entity extends ObjectLiteral> {
 
   private beforeCursor: string | null = null;
 
+  private includeCursor: boolean | null = null;
+
   private nextAfterCursor: string | null = null;
 
   private nextBeforeCursor: string | null = null;
@@ -66,6 +68,10 @@ export default class Paginator<Entity extends ObjectLiteral> {
 
   public setBeforeCursor(cursor: string): void {
     this.beforeCursor = cursor;
+  }
+
+  public setIncludeCursor(includeCursor: boolean): void {
+    this.includeCursor = includeCursor;
   }
 
   public setLimit(limit: number): void {
@@ -148,15 +154,21 @@ export default class Paginator<Entity extends ObjectLiteral> {
   }
 
   private getOperator(): string {
+    let operator = '=';
+
     if (this.hasAfterCursor()) {
-      return this.order === Order.ASC ? '>' : '<';
+      operator = this.order === Order.ASC ? '>' : '<';
     }
 
     if (this.hasBeforeCursor()) {
-      return this.order === Order.ASC ? '<' : '>';
+      operator = this.order === Order.ASC ? '<' : '>';
     }
 
-    return '=';
+    if (this.shouldIncludeCursor()) {
+      operator += '='
+    }
+
+    return operator;
   }
 
   private buildOrder(): OrderByCondition {
@@ -180,6 +192,10 @@ export default class Paginator<Entity extends ObjectLiteral> {
 
   private hasBeforeCursor(): boolean {
     return this.beforeCursor !== null;
+  }
+
+  private shouldIncludeCursor(): boolean {
+    return this.includeCursor !== null ? this.includeCursor : false;
   }
 
   private encode(entity: Entity): string {
