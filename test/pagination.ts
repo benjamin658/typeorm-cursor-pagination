@@ -145,6 +145,82 @@ describe('TypeORM cursor-based pagination test', () => {
     expect(result.cursor.afterCursor).to.eq(null);
   });
 
+  it('should correctly include cursor record', async () => {
+    const queryBuilder = createQueryBuilder(User, 'user').leftJoinAndSelect('user.photos', 'photo');
+    const firstPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['id', 'name'],
+      query: {
+        limit: 3,
+      },
+    });
+    const firstPageResult = await firstPagePaginator.paginate(queryBuilder.clone());
+
+    const nextPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['id', 'name'],
+      query: {
+        limit: 3,
+        afterCursor: firstPageResult.cursor.afterCursor as string,
+        includeCursor: true,
+      },
+    });
+    const nextPageResult = await nextPagePaginator.paginate(queryBuilder.clone());
+
+    const afterPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['id', 'name'],
+      query: {
+        limit: 3,
+        afterCursor: nextPageResult.cursor.afterCursor as string,
+        includeCursor: true,
+      },
+    });
+    const afterPageResult = await afterPagePaginator.paginate(queryBuilder.clone());
+
+    const prevPagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['id', 'name'],
+      query: {
+        limit: 3,
+        beforeCursor: afterPageResult.cursor.beforeCursor as string,
+        includeCursor: true,
+      },
+    });
+    const prevPageResult = await prevPagePaginator.paginate(queryBuilder.clone());
+
+    const beforePagePaginator = buildPaginator({
+      entity: User,
+      paginationKeys: ['id', 'name'],
+      query: {
+        limit: 3,
+        beforeCursor: prevPageResult.cursor.beforeCursor as string,
+        includeCursor: true,
+      },
+    });
+    const beforePageResult = await beforePagePaginator.paginate(queryBuilder.clone());
+
+    expect(firstPageResult.data[0].id).to.eq(10);
+    expect(firstPageResult.data[1].id).to.eq(9);
+    expect(firstPageResult.data[2].id).to.eq(8);
+
+    expect(nextPageResult.data[0].id).to.eq(8);
+    expect(nextPageResult.data[1].id).to.eq(7);
+    expect(nextPageResult.data[2].id).to.eq(6);
+
+    expect(afterPageResult.data[0].id).to.eq(6);
+    expect(afterPageResult.data[1].id).to.eq(5);
+    expect(afterPageResult.data[2].id).to.eq(4);
+
+    expect(prevPageResult.data[0].id).to.eq(8);
+    expect(prevPageResult.data[1].id).to.eq(7);
+    expect(prevPageResult.data[2].id).to.eq(6);
+
+    expect(beforePageResult.data[0].id).to.eq(10);
+    expect(beforePageResult.data[1].id).to.eq(9);
+    expect(beforePageResult.data[2].id).to.eq(8);
+  });
+
   after(async () => {
     await getConnection().query('TRUNCATE TABLE users RESTART IDENTITY CASCADE;');
     await getConnection().close();
