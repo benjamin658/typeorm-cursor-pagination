@@ -5,6 +5,7 @@ import Paginator, { Order } from './Paginator';
 export interface PagingQuery {
   afterCursor?: string;
   beforeCursor?: string;
+  includeCursor?: boolean;
   limit?: number;
   order?: Order | 'ASC' | 'DESC';
 }
@@ -36,6 +37,10 @@ export function buildPaginator<Entity extends ObjectLiteral>(
 
   if (query.beforeCursor) {
     paginator.setBeforeCursor(query.beforeCursor);
+  }
+
+  if (query.includeCursor) {
+    paginator.setIncludeCursor(query.includeCursor);
   }
 
   if (query.limit) {

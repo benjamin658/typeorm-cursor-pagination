@@ -52,6 +52,7 @@ const { data, cursor } = await paginator.paginate(queryBuilder);
   * `order`: **ASC** or **DESC**, **default is DESC**.
   * `beforeCursor`: the before cursor.
   * `afterCursor`: the after cursor.
+  * `includeCursor` [optional]: include the cursor record, **default is false**.
 
 **`paginator.paginate(queryBuilder)` returns the entities and cursor for the next iteration**
 
