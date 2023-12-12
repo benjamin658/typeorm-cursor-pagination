@@ -1,5 +1,6 @@
 import {
   Brackets,
+  FindManyOptions,
   ObjectLiteral,
   ObjectType,
   OrderByCondition,
@@ -7,13 +8,7 @@ import {
   WhereExpressionBuilder,
 } from 'typeorm';
 
-import {
-  atob,
-  btoa,
-  encodeByType,
-  decodeByType,
-  pascalToUnderscore,
-} from './utils';
+import { atob, btoa, encodeByType, decodeByType, pascalToUnderscore } from './utils';
 
 export enum Order {
   ASC = 'ASC',
@@ -36,7 +31,14 @@ export interface PagingResult<Entity> {
   cursor: Cursor;
 }
 
-export default class Paginator<Entity extends ObjectLiteral> {
+export interface Paginated<Entity> {
+  items: Entity[];
+  count: number;
+  beforeCursor: string | null;
+  afterCursor: string | null;
+}
+
+export default class CursorPaginator<Entity extends ObjectLiteral> {
   private afterCursor: string | null = null;
 
   private beforeCursor: string | null = null;
@@ -50,6 +52,8 @@ export default class Paginator<Entity extends ObjectLiteral> {
   private limit = 100;
 
   private order: Order = Order.DESC;
+
+  private findOptions: FindManyOptions<Entity> | undefined;
 
   public constructor(
     private entity: ObjectType<Entity>,
@@ -76,18 +80,31 @@ export default class Paginator<Entity extends ObjectLiteral> {
     this.order = order;
   }
 
-  public async paginate(
-    builder: SelectQueryBuilder<Entity>,
-  ): Promise<PagingResult<Entity>> {
-    const entities = await this.appendPagingQuery(builder).getMany();
+  public setFindOptions(options: FindManyOptions<Entity>): void {
+    this.findOptions = options;
+  }
+
+  public setPaginationKeys(keys: Extract<keyof Entity, string>[]): void {
+    this.paginationKeys = keys;
+  }
+
+  public async paginate(builder: SelectQueryBuilder<Entity>): Promise<Paginated<Entity>> {
+    if (this.findOptions) {
+      builder.setFindOptions(this.findOptions);
+    }
+
+    const pagingQueryBuilder = this.appendPagingQuery(builder);
+    const entities = await pagingQueryBuilder.getMany();
     const hasMore = entities.length > this.limit;
+
+    const count = await builder.getCount();
 
     if (hasMore) {
       entities.splice(entities.length - 1, 1);
     }
 
     if (entities.length === 0) {
-      return this.toPagingResult(entities);
+      return this.toPagingResult(entities, count);
     }
 
     if (!this.hasAfterCursor() && this.hasBeforeCursor()) {
@@ -102,7 +119,7 @@ export default class Paginator<Entity extends ObjectLiteral> {
       this.nextBeforeCursor = this.encode(entities[0]);
     }
 
-    return this.toPagingResult(entities);
+    return this.toPagingResult(entities, count);
   }
 
   private getCursor(): Cursor {
@@ -112,9 +129,7 @@ export default class Paginator<Entity extends ObjectLiteral> {
     };
   }
 
-  private appendPagingQuery(
-    builder: SelectQueryBuilder<Entity>,
-  ): SelectQueryBuilder<Entity> {
+  private appendPagingQuery(builder: SelectQueryBuilder<Entity>): SelectQueryBuilder<Entity> {
     const cursors: CursorParam = {};
     const clonedBuilder = new SelectQueryBuilder<Entity>(builder);
 
@@ -125,13 +140,15 @@ export default class Paginator<Entity extends ObjectLiteral> {
     }
 
     if (Object.keys(cursors).length > 0) {
-      clonedBuilder.andWhere(
-        new Brackets((where) => this.buildCursorQuery(where, cursors)),
-      );
+      clonedBuilder.andWhere(new Brackets((where) => this.buildCursorQuery(where, cursors)));
     }
 
     clonedBuilder.take(this.limit + 1);
-    clonedBuilder.orderBy(this.buildOrder());
+
+    const paginationKeyOrders = this.buildOrder();
+    Object.keys(paginationKeyOrders).forEach((orderKey) => {
+      clonedBuilder.addOrderBy(orderKey, paginationKeyOrders[orderKey] === 'ASC' ? 'ASC' : 'DESC');
+    });
 
     return clonedBuilder;
   }
@@ -142,8 +159,11 @@ export default class Paginator<Entity extends ObjectLiteral> {
     let query = '';
     this.paginationKeys.forEach((key) => {
       params[key] = cursors[key];
-      where.orWhere(`${query}${this.alias}.${key} ${operator} :${key}`, params);
-      query = `${query}${this.alias}.${key} = :${key} AND `;
+
+      if (params[key]) {
+        where.andWhere(`(${query}${this.alias}.${key} ${operator} :${key})`, params);
+        query = `${query}${this.alias}.${key} = :${key} OR `;
+      }
     });
   }
 
@@ -199,30 +219,29 @@ export default class Paginator<Entity extends ObjectLiteral> {
     const columns = atob(cursor).split(',');
     columns.forEach((column) => {
       const [key, raw] = column.split(':');
-      const type = this.getEntityPropertyType(key);
-      const value = decodeByType(type, raw);
-      cursors[key] = value;
+      if (raw !== 'null') {
+        const type = this.getEntityPropertyType(key);
+        const value = decodeByType(type, raw);
+        cursors[key] = value;
+      }
     });
 
     return cursors;
   }
 
   private getEntityPropertyType(key: string): string {
-    return Reflect.getMetadata(
-      'design:type',
-      this.entity.prototype,
-      key,
-    ).name.toLowerCase();
+    return Reflect.getMetadata('design:type', this.entity.prototype, key).name.toLowerCase();
   }
 
   private flipOrder(order: Order): Order {
     return order === Order.ASC ? Order.DESC : Order.ASC;
   }
 
-  private toPagingResult<Entity>(entities: Entity[]): PagingResult<Entity> {
+  private toPagingResult<Entity>(entities: Entity[], count: number): Paginated<Entity> {
     return {
-      data: entities,
-      cursor: this.getCursor(),
+      items: entities,
+      ...this.getCursor(),
+      count,
     };
   }
 }
